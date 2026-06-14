@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/logen-banner.png" alt="LOGEN — AI Sysadmin Agent for Linux Operations" width="100%">
+
 # 🛡 LOGEN — Linux Operational Agent
 
 **AI Sysadmin Agent untuk Operasi Server Linux — End-to-End**
