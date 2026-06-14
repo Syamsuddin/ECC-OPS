@@ -1,0 +1,12 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# LOGEN runtime state — NEVER commit operator/host state, audit, or secrets
+.logen/
+*.local
+*.bak.*
+coverage/

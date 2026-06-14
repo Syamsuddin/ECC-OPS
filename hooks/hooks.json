@@ -1,0 +1,37 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ops-context-load.js" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ops-safety-check.js" },
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ops-shadow-gate.js" },
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ops-confirm-gate.js" },
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ops-sandbox-wrap.js" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ops-post-verify.js", "async": true },
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ops-audit-log.js", "async": true }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ops-env-protect.js", "async": true }
+        ]
+      }
+    ]
+  }
+}

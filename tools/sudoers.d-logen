@@ -1,0 +1,10 @@
+# LOGEN sudoers drop-in.
+# Install to /etc/sudoers.d/logen with mode 0440 root:root, and validate with:
+#   visudo -cf /etc/sudoers.d/logen
+# Tight NOPASSWD whitelist — NOT blanket sudo. Spec: ECC_OPS.md §XXII.10.
+# Replace `logen` with the actual non-root agent user if different.
+
+Cmnd_Alias LOGEN_SANDBOX = /usr/local/bin/logen-sandbox-helper
+Cmnd_Alias LOGEN_SVC     = /usr/bin/systemctl reload *, /usr/bin/systemctl restart *
+
+logen ALL=(root) NOPASSWD: LOGEN_SANDBOX, LOGEN_SVC

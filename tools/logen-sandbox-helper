@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# LOGEN privileged sandbox helper.
+# Install root-owned at /usr/local/bin/logen-sandbox-helper (mode 0755); the non-root agent invokes it
+# via sudo NOPASSWD (see tools/sudoers.d-logen). Whitelisted verbs ONLY — never executes arbitrary input.
+# Spec: ECC_OPS.md §XXI.1 (broker) and §XXII.10 (verb set). Activated by build milestone M4.
+set -euo pipefail
+
+verb="${1:-}"
+shift || true
+
+case "$verb" in
+  caps-probe)
+    # READ-only capability detection -> Profile.sandbox_capabilities (§XXII.9).
+    command -v podman >/dev/null 2>&1 && echo "container:podman:rootless=$(podman info --format '{{.Host.Security.Rootless}}' 2>/dev/null || echo '?')"
+    [ "$(cat /proc/sys/user/max_user_namespaces 2>/dev/null || echo 0)" -gt 0 ] && echo "userns:ok"
+    findmnt -no FSTYPE / 2>/dev/null | grep -qE 'zfs|btrfs' && echo "cow:fs"
+    lvs --noheadings -o lv_attr 2>/dev/null | grep -q '[[:space:]]t' && echo "cow:lvm-thin"
+    grep -q 'Seccomp' /proc/self/status 2>/dev/null && echo "seccomp:ok"
+    [ -e /dev/kvm ] && echo "microvm:kvm"
+    exit 0
+    ;;
+  netns-create)  ip netns add "logen-shadow-${1:?id}" ;;
+  netns-destroy) ip netns del "logen-shadow-${1:?id}" ;;
+  cow-clone)     lvcreate -s -n "logen-shadow-${2:?id}" -L "${3:?size_g}G" "${1:?vg}" ;;
+  cow-destroy)   lvremove -f "${1:?vg}/logen-shadow-${2:?id}" ;;
+  nspawn-boot)   systemd-nspawn -q -D "${1:?dir}" --ephemeral "${@:2}" ;;
+  contain)
+    # Containment wrapper: contain <id> <rw_path>[,<rw_path>...] -- <cmd...>
+    id="${1:?id}"; shift
+    rw="${1:?rw_paths}"; shift
+    [ "${1:-}" = "--" ] && shift
+    systemd-run --scope --unit "logen-contain-${id}" \
+      -p ProtectSystem=strict -p PrivateTmp=yes -p NoNewPrivileges=yes \
+      -p ReadWritePaths="${rw//,/ }" "$@"
+    ;;
+  *)
+    echo "logen-sandbox-helper: refused unknown verb '${verb}'" >&2
+    exit 64
+    ;;
+esac

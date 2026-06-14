@@ -1,0 +1,14 @@
+{
+  "name": "logen",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LOGEN — Linux Operational Agent. Hook & tooling test harness for the Claude Code plugin.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "validate": "bash tools/validate.sh"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
