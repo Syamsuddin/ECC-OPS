@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logen-banner.png" alt="LOGEN — AI Sysadmin Agent for Linux Operations" width="100%">
+<img src="assets/logen-banner.jpg" alt="LOGEN — AI Sysadmin Agent for Linux Operations" width="100%">
 
 # 🛡 LOGEN — Linux Operational Agent
 
