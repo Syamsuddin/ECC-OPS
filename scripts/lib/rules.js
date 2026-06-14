@@ -6,7 +6,7 @@
 
 const BLOCKED = [
   { re: /\bchmod\s+(-[A-Za-z]*\s+)*777\b/, msg: 'chmod 777 is never allowed (world-writable).' },
-  { re: /\brm\b(?=[^|;&\n]*(?:--no-preserve-root|\s\/(?:\s|$)))(?=[^|;&\n]*(?:-[a-z]*r|--recursive))(?=[^|;&\n]*(?:-[a-z]*f|--force))/, msg: 'rm -rf on / is forbidden (flag order independent).' },
+  { re: /\brm\b(?=[^|;&\n]*(?:--no-preserve-root|\s\/(?:\s|$|\*|\.|\{)))(?=[^|;&\n]*(?:-[a-z]*r|--recursive))(?=[^|;&\n]*(?:-[a-z]*f|--force))/, msg: 'rm -rf on / (incl. /*, /., /{...}) is forbidden (flag order independent).' },
   { re: /\brm\s+-[a-z]*\s+--no-preserve-root\b/, msg: 'rm --no-preserve-root is forbidden.' },
   { re: /\bufw\s+disable\b/, msg: 'ufw disable removes all firewall protection.' },
   { re: /\biptables\s+(-F|--flush)\b/, msg: 'iptables flush exposes the server.' },

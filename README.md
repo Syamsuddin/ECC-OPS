@@ -19,7 +19,7 @@
 ![Subagents](https://img.shields.io/badge/subagents-9-blueviolet?style=flat-square)
 ![Commands](https://img.shields.io/badge/commands-24-blueviolet?style=flat-square)
 ![Hooks](https://img.shields.io/badge/hooks-8-blueviolet?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-40%20passing-success?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-42%20passing-success?style=flat-square)
 
 [Mengapa](#mengapa-logen) · [Prinsip](#prinsip-desain-9) · [Pilar](#empat-pilar-kecerdasan) · [Kecerdasan Lanjutan](#lapisan-kecerdasan-lanjutan) · [Stack](#stack-yang-didukung) · [Skills](#skills-28) · [Subagents](#subagents-9) · [Commands](#commands-24) · [Hooks](#hooks-8) · [Tree](#struktur-repo-lengkap) · [Instalasi](#instalasi)
 

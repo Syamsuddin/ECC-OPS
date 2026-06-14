@@ -43,3 +43,14 @@ test('PreToolUse stubs and context-load are non-blocking', () => {
   assert.equal(r.status, 0);
   assert.match(r.stdout, /SessionStart/);
 });
+
+test('ops-post-verify: an injected service name is NOT shell-executed (execFileSync)', () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const marker = path.join(os.tmpdir(), `logen-pv-pwn-${process.pid}`);
+  try { fs.unlinkSync(marker); } catch (_) { /* not there */ }
+  // ${IFS} keeps the substitution inside the single captured service token (no spaces).
+  const cmd = 'systemctl restart x$(touch${IFS}' + marker + ')';
+  runHook('ops-post-verify.js', { tool_input: { command: cmd } });
+  assert.equal(fs.existsSync(marker), false, 'the injected $(touch ...) must NOT execute');
+});

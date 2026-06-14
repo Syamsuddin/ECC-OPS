@@ -3,8 +3,13 @@
 #   visudo -cf /etc/sudoers.d/logen
 # Tight NOPASSWD whitelist — NOT blanket sudo. Spec: ECC_OPS.md §XXII.10.
 # Replace `logen` with the actual non-root agent user if different.
+#
+# LEAST PRIVILEGE: do NOT use `systemctl restart *` wildcards. List ONLY the services this host
+# actually manages (from its Server Profile). The lines below are an EXAMPLE for an nginx + php-fpm
+# host — edit them to match the real service set, then re-validate with visudo -cf.
 
 Cmnd_Alias LOGEN_SANDBOX = /usr/local/bin/logen-sandbox-helper
-Cmnd_Alias LOGEN_SVC     = /usr/bin/systemctl reload *, /usr/bin/systemctl restart *
+Cmnd_Alias LOGEN_SVC = /usr/bin/systemctl reload nginx, /usr/bin/systemctl restart nginx, \
+                       /usr/bin/systemctl reload php8.3-fpm, /usr/bin/systemctl restart php8.3-fpm
 
 logen ALL=(root) NOPASSWD: LOGEN_SANDBOX, LOGEN_SVC

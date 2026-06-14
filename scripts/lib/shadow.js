@@ -5,7 +5,7 @@
 // and its fidelity is T1 or T2 — T0 (logic-only) never authorizes (the design's hard red line).
 const crypto = require('crypto');
 const fs = require('fs');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const P = require('./paths');
 
 const TTL_S = 1800; // 30 min
@@ -16,18 +16,25 @@ function opHash(command, host) {
 }
 
 // Map a planned command to a native T1 dry-run validator (real binary validates the plan, no infra).
-// Returns { validator, tier } or null when nothing safe applies (caller treats null as T0 advisory).
+// Returns { argv, tier } (argv runs via execFileSync — NO shell, so nothing in the command can inject)
+// or null when nothing safe applies (caller treats null as T0 advisory).
 function selectValidator(command) {
   const c = command || '';
   // Command-verb patterns first (a package op that merely names "nginx" is still a package op).
-  if (/\b(apt|apt-get)\s+install\b/.test(c)) return { validator: c.replace(/\b(apt|apt-get)\s+install\b/, '$1 install -s'), tier: 'T1' };
-  if (/\bcomposer\s+install\b/.test(c)) return { validator: 'composer validate', tier: 'T1' };
-  if (/\bvisudo\b|sudoers/.test(c)) return { validator: 'visudo -cf /etc/sudoers', tier: 'T1' };
+  if (/\b(apt|apt-get)\s+install\b/.test(c)) {
+    // Extract package args after `install` and keep ONLY safe package-name tokens — anything with a
+    // shell metacharacter is dropped (so an injected `foo$(...)` yields no validator -> T0).
+    const after = c.replace(/^.*\b(?:apt|apt-get)\s+install\b/, '').trim();
+    const pkgs = after.split(/\s+/).filter((t) => /^[A-Za-z0-9][A-Za-z0-9+._-]*$/.test(t));
+    return pkgs.length ? { argv: ['apt-get', 'install', '-s', ...pkgs], tier: 'T1' } : null;
+  }
+  if (/\bcomposer\s+install\b/.test(c)) return { argv: ['composer', 'validate'], tier: 'T1' };
+  if (/\bvisudo\b|sudoers/.test(c)) return { argv: ['visudo', '-cf', '/etc/sudoers'], tier: 'T1' };
   // Config/service patterns.
-  if (/\bsshd\b/.test(c) || /sshd_config/.test(c)) return { validator: 'sshd -t', tier: 'T1' };
-  if (/\bnginx\b/.test(c) || /\/etc\/nginx\//.test(c)) return { validator: 'nginx -t', tier: 'T1' };
-  if (/\b(apachectl|apache2|httpd)\b/.test(c) || /\/etc\/(apache2|httpd)\//.test(c)) return { validator: 'apachectl configtest', tier: 'T1' };
-  if (/\bnamed\b|\bbind9?\b/.test(c) || /named\.conf/.test(c)) return { validator: 'named-checkconf', tier: 'T1' };
+  if (/\bsshd\b/.test(c) || /sshd_config/.test(c)) return { argv: ['sshd', '-t'], tier: 'T1' };
+  if (/\bnginx\b/.test(c) || /\/etc\/nginx\//.test(c)) return { argv: ['nginx', '-t'], tier: 'T1' };
+  if (/\b(apachectl|apache2|httpd)\b/.test(c) || /\/etc\/(apache2|httpd)\//.test(c)) return { argv: ['apachectl', 'configtest'], tier: 'T1' };
+  if (/\bnamed\b|\bbind9?\b/.test(c) || /named\.conf/.test(c)) return { argv: ['named-checkconf'], tier: 'T1' };
   return null;
 }
 
@@ -71,13 +78,14 @@ function rehearse(host, command, nowIso) {
   let detail = 'no native validator — advisory (T0) only';
   if (sel) {
     fidelity = sel.tier;
+    const shown = sel.argv.join(' ');
     try {
-      execSync(sel.validator, { stdio: ['ignore', 'ignore', 'pipe'], timeout: 10000 });
+      execFileSync(sel.argv[0], sel.argv.slice(1), { stdio: ['ignore', 'ignore', 'pipe'], timeout: 10000 });
       passed = true;
-      detail = `${sel.validator}: ok`;
+      detail = `${shown}: ok`;
     } catch (_) {
       passed = false;
-      detail = `${sel.validator}: FAILED`;
+      detail = `${shown}: FAILED`;
     }
   }
   const record = {

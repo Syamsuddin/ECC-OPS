@@ -8,6 +8,9 @@ test('catastrophic commands are hard-blocked', () => {
     'chmod 777 /var/www',
     'rm -rf --no-preserve-root /',
     'rm -fr /',
+    'rm -rf /*',
+    'rm -rf /.',
+    'rm -rf /{bin,etc}',
     'ufw disable',
     'iptables -F',
     'nft flush ruleset',
@@ -27,6 +30,7 @@ test('safe commands are not blocked', () => {
     'chmod 640 /var/www/app/.env',
     'git pull --ff-only',
     'nginx -t',
+    'rm -rf /var/www/old', // a specific path is DESTRUCTIVE-tier, not hard-blocked
   ];
   for (const c of cases) assert.equal(isCatastrophic(c), null, `should allow: ${c}`);
 });

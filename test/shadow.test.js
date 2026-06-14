@@ -12,11 +12,13 @@ test('opHash: deterministic and host-sensitive', () => {
   assert.notEqual(opHash('nginx -t', 'web01'), opHash('nginx -t', 'web02'));
 });
 
-test('selectValidator: maps commands to native T1 validators', () => {
-  assert.deepEqual(selectValidator('systemctl reload nginx'), { validator: 'nginx -t', tier: 'T1' });
-  assert.deepEqual(selectValidator('vim /etc/ssh/sshd_config'), { validator: 'sshd -t', tier: 'T1' });
-  assert.equal(selectValidator('apt-get install nginx').validator, 'apt-get install -s nginx');
+test('selectValidator: argv form (execFileSync, no shell) + injection-safe', () => {
+  assert.deepEqual(selectValidator('systemctl reload nginx'), { argv: ['nginx', '-t'], tier: 'T1' });
+  assert.deepEqual(selectValidator('vim /etc/ssh/sshd_config'), { argv: ['sshd', '-t'], tier: 'T1' });
+  assert.deepEqual(selectValidator('apt-get install nginx vim').argv, ['apt-get', 'install', '-s', 'nginx', 'vim']);
   assert.equal(selectValidator('rm -rf /var/www/old'), null);
+  // an injected package arg with shell metacharacters is dropped -> no validator (advisory T0)
+  assert.equal(selectValidator('apt-get install foo$(touch /tmp/x)'), null);
 });
 
 // Build a temp LOGEN_HOME with shadow records to exercise findFreshPass + the gate.

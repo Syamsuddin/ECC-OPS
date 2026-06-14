@@ -3,7 +3,48 @@
 # Install root-owned at /usr/local/bin/logen-sandbox-helper (mode 0755); the non-root agent invokes it
 # via sudo NOPASSWD (see tools/sudoers.d-logen). Whitelisted verbs ONLY — never executes arbitrary input.
 # Spec: ECC_OPS.md §XXI.1 (broker) and §XXII.10 (verb set). Activated by build milestone M4.
+#
+# Defense-in-depth (hardening v1.0.1): this helper validates its OWN inputs and never trusts the caller —
+# the blast_radius / id checks here do NOT rely on the (bypassable) ops-sandbox-wrap hook. A direct
+# `sudo logen-sandbox-helper contain x / -- ...` is refused.
 set -euo pipefail
+
+# --- input validation -------------------------------------------------------
+# Reject whole-system / non-absolute ReadWritePaths elements.
+deny_path() {
+  case "$1" in
+    /|/etc|/usr|/bin|/sbin|/lib|/lib64|/boot|/var|/root|/home|/dev|/proc|/sys|/run|"") return 0 ;; # dangerous
+    /*) return 1 ;;   # absolute & specific -> ok
+    *)  return 0 ;;   # not absolute -> deny
+  esac
+}
+
+validate_rw() {
+  local oldifs="$IFS" p
+  IFS=','
+  set -f
+  for p in $1; do
+    p="${p%/}"; [ -z "$p" ] && p="/"
+    if deny_path "$p"; then
+      IFS="$oldifs"; set +f
+      echo "logen-sandbox-helper: refused unsafe ReadWritePaths element '$p'" >&2
+      exit 65
+    fi
+  done
+  IFS="$oldifs"; set +f
+}
+
+# id / vg / image must be safe tokens (no shell metacharacters, no path traversal in ids).
+validate_token() {
+  case "$1" in
+    ''|*[!A-Za-z0-9_./-]*) echo "logen-sandbox-helper: invalid argument '$1'" >&2; exit 65 ;;
+  esac
+}
+validate_id() {
+  case "$1" in
+    ''|*[!A-Za-z0-9_-]*) echo "logen-sandbox-helper: invalid id '$1'" >&2; exit 65 ;;
+  esac
+}
 
 verb="${1:-}"
 shift || true
@@ -19,16 +60,22 @@ case "$verb" in
     [ -e /dev/kvm ] && echo "microvm:kvm"
     exit 0
     ;;
-  netns-create)  ip netns add "logen-shadow-${1:?id}" ;;
-  netns-destroy) ip netns del "logen-shadow-${1:?id}" ;;
-  cow-clone)     lvcreate -s -n "logen-shadow-${2:?id}" -L "${3:?size_g}G" "${1:?vg}" ;;
-  cow-destroy)   lvremove -f "${1:?vg}/logen-shadow-${2:?id}" ;;
-  nspawn-boot)   systemd-nspawn -q -D "${1:?dir}" --ephemeral "${@:2}" ;;
+  netns-create)  validate_id "${1:?id}"; ip netns add "logen-shadow-$1" ;;
+  netns-destroy) validate_id "${1:?id}"; ip netns del "logen-shadow-$1" ;;
+  cow-clone)     validate_token "${1:?vg}"; validate_id "${2:?id}"; validate_token "${3:?size_g}"
+                 case "$3" in *[!0-9]*) echo "logen-sandbox-helper: size must be numeric" >&2; exit 65 ;; esac
+                 lvcreate -s -n "logen-shadow-$2" -L "${3}G" "$1" ;;
+  cow-destroy)   validate_token "${1:?vg}"; validate_id "${2:?id}"; lvremove -f "$1/logen-shadow-$2" ;;
+  nspawn-boot)   validate_token "${1:?dir}"
+                 if deny_path "${1%/}"; then echo "logen-sandbox-helper: refused unsafe nspawn dir '$1'" >&2; exit 65; fi
+                 dir="$1"; shift; systemd-nspawn -q -D "$dir" --ephemeral "$@" ;;
   contain)
     # Containment wrapper: contain <id> <rw_path>[,<rw_path>...] -- <cmd...>
     id="${1:?id}"; shift
     rw="${1:?rw_paths}"; shift
     [ "${1:-}" = "--" ] && shift
+    validate_id "$id"
+    validate_rw "$rw"
     systemd-run --scope --unit "logen-contain-${id}" \
       -p ProtectSystem=strict -p PrivateTmp=yes -p NoNewPrivileges=yes \
       -p ReadWritePaths="${rw//,/ }" "$@"

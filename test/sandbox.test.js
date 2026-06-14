@@ -78,3 +78,16 @@ test('ops-sandbox-wrap: enforcement matrix', () => {
 
   fs.rmSync(home, { recursive: true, force: true });
 });
+
+test('logen-sandbox-helper: refuses unsafe paths / ids / unknown verbs (defense-in-depth, not just the hook)', () => {
+  const helper = path.join(__dirname, '..', 'tools', 'logen-sandbox-helper');
+  const run = (...args) => spawnSync('bash', [helper, ...args], { encoding: 'utf8' });
+  // Unsafe ReadWritePaths are refused BEFORE systemd-run (so this is testable on any OS).
+  for (const bad of ['/', '/etc', '/var', '/usr', 'relative/path']) {
+    assert.notEqual(run('contain', 'op', bad, '--', 'echo', 'hi').status, 0, `should refuse rw='${bad}'`);
+  }
+  // Invalid id (shell metacharacters) refused.
+  assert.notEqual(run('contain', 'bad;id', '/var/www/app', '--', 'echo', 'hi').status, 0);
+  // Unknown verb -> exit 64.
+  assert.equal(run('totally-unknown-verb').status, 64);
+});

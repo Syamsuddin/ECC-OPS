@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // PostToolUse(Bash): after a service change, verify it is active (Rule ops-verify). Advisory only.
+// Uses execFileSync (no shell) so a service name extracted from the command can never be injected.
 'use strict';
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const { readPayload } = require('../lib/state');
 
 (async () => {
@@ -12,7 +13,7 @@ const { readPayload } = require('../lib/state');
     const svc = m[1];
     let state = 'unknown';
     try {
-      state = execSync(`systemctl is-active ${svc}`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+      state = execFileSync('systemctl', ['is-active', svc], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
     } catch (e) {
       state = (e && e.stdout ? String(e.stdout).trim() : '') || 'inactive';
     }
