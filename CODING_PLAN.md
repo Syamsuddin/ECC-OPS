@@ -6,6 +6,8 @@ Target: sebuah Claude Code plugin mandiri (`skills/`, `agents/`, `commands/`, `r
 
 **Registry final yang harus tercapai:** 28 skills · 9 subagents · 24 commands · 3 rules · 8 hooks.
 
+> **Catatan versioning:** build lengkap (M0–M8, termasuk lapisan kecerdasan) dirilis sebagai **LOGEN v1.0.0**. Label "v1.0/v2.0" pada fase di bawah adalah target internal saat perencanaan; tag rilis aktual tunggal = **v1.0.0** di akhir M8. Akhir M3 hanyalah checkpoint *base agent* (bukan rilis terpisah).
+
 ---
 
 ## 0. Prinsip rencana
