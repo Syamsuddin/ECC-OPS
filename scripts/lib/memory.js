@@ -56,4 +56,19 @@ function digest(host, limit, nowMs) {
   return entries.map((e) => `• [${e.type || 'note'}] ${e.title}: ${e.fact}`).join('\n');
 }
 
-module.exports = { readJsonl, activeEntries, recall, digest };
+// Append a memory entry (global or per-host JSONL). WRITE-tier in the design; persistence only here.
+function writeEntry(scope, entry, host) {
+  const target = scope === 'global'
+    ? P.memoryGlobal
+    : P.memoryFor(host || (typeof scope === 'string' && scope.startsWith('host:') ? scope.slice(5) : 'unknown'));
+  try { fs.mkdirSync(P.memoryDir, { recursive: true, mode: 0o700 }); } catch (_) { /* ignore */ }
+  try { fs.appendFileSync(target, JSON.stringify(entry) + '\n', { mode: 0o600 }); return true; }
+  catch (_) { return false; }
+}
+
+// Tombstone an entry by (scope,title) — it stops being recalled (newest-line-wins, §IV).
+function forget(scope, title, host, nowIso) {
+  return writeEntry(scope, { scope, title, status: 'forgotten', forgotten_at: nowIso || new Date().toISOString() }, host);
+}
+
+module.exports = { readJsonl, activeEntries, recall, digest, writeEntry, forget };
