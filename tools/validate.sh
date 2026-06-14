@@ -37,11 +37,20 @@ if [ -f hooks/hooks.json ]; then
   done < <(grep -oE 'scripts/hooks/[a-z-]+\.js' hooks/hooks.json | sort -u)
 fi
 
-# 5. Progress against the registry targets (ECC_OPS.md §XVIII).
+# 5. Registry counts (ECC_OPS.md §XVIII). With --strict, enforce the full target (fail on mismatch);
+#    otherwise just report progress (used mid-build).
 count() { find "$1" -maxdepth 2 -name "$2" 2>/dev/null | wc -l | tr -d ' '; }
-printf '\nprogress: skills %s/28 · subagents %s/9 · commands %s/24 · rules %s/3 · hooks %s/8\n' \
-  "$(count skills 'SKILL.md')" "$(count agents '*.md')" "$(count commands '*.md')" \
-  "$(count rules '*.md')" "$(count scripts/hooks '*.js')"
+sk=$(count skills 'SKILL.md'); ag=$(count agents '*.md'); cm=$(count commands '*.md')
+ru=$(count rules '*.md'); hk=$(count scripts/hooks '*.js')
+printf '\nregistry: skills %s/28 · subagents %s/9 · commands %s/24 · rules %s/3 · hooks %s/8\n' "$sk" "$ag" "$cm" "$ru" "$hk"
+
+if [ "${1:-}" = "--strict" ]; then
+  [ "$sk" = 28 ] || bad "skills count $sk != 28"
+  [ "$ag" = 9 ]  || bad "subagents count $ag != 9"
+  [ "$cm" = 24 ] || bad "commands count $cm != 24"
+  [ "$ru" = 3 ]  || bad "rules count $ru != 3"
+  [ "$hk" = 8 ]  || bad "hooks count $hk != 8"
+fi
 
 if [ "$fail" -eq 0 ]; then echo "VALIDATE: PASS"; else echo "VALIDATE: FAIL"; fi
 exit "$fail"

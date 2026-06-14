@@ -6,8 +6,8 @@
 
 *Plugin Claude Code yang mengoperasikan server Linux dari nol hingga produksi — **aman**, **sadar-konteks**, dan **auditable**.*
 
-![Status](https://img.shields.io/badge/status-v1.0%20(M3%20complete)-success?style=flat-square)
-![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)
+![Status](https://img.shields.io/badge/status-v2.0%20(M0--M8%20complete)-success?style=flat-square)
+![Version](https://img.shields.io/badge/version-2.0.0-blue?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Linux-informational?style=flat-square&logo=linux&logoColor=white)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2?style=flat-square&logo=anthropic&logoColor=white)
 ![Node](https://img.shields.io/badge/hooks-Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
@@ -46,7 +46,7 @@ Plus **lapisan kecerdasan lanjutan** (desain §XXI–XXII): `ops-sandbox` (rehea
 
 ## Status build
 
-LOGEN dibangun berfase (lihat [CODING_PLAN.md](CODING_PLAN.md)). Registry target: **28 skills · 9 subagents · 24 commands · 3 rules · 8 hooks**.
+LOGEN dibangun berfase (lihat [CODING_PLAN.md](CODING_PLAN.md)). Registry **lengkap**: **28 skills · 9 subagents · 24 commands · 3 rules · 8 hooks**.
 
 | Fase | Cakupan | Status |
 |---|---|---|
@@ -54,10 +54,13 @@ LOGEN dibangun berfase (lihat [CODING_PLAN.md](CODING_PLAN.md)). Registry target
 | **M1** Fondasi keselamatan | 3 rules + 5 hook inti + wiring `~/.logen/` | ✅ |
 | **M2** State & konteks | `ops-discovery`, `ops-memory`, SessionStart | ✅ |
 | **M3** Operasi dasar (8 domain) | 22 skills + 8 subagents + 18 commands | ✅ **v1.0.0** |
-| **M4–M7** Lapisan kecerdasan | sandbox · shadow · trust · immunity | ⏳ → rilis v2.0 |
-| **M8** Hardening & rilis | E2E, docs, packaging | ⏳ |
+| **M4** Sandbox containment | `ops-sandbox` + `ops-sandbox-wrap` | ✅ |
+| **M5** Shadow rehearsal | `ops-shadow` + `ops-shadow-gate` + `/shadow` | ✅ |
+| **M6** Calibrated autonomy | `ops-trust` + `lib/beta`/`lib/ledger` + `/trust` | ✅ |
+| **M7** Fleet immune system | `ops-immunity` + `immunity-synthesizer` + `/immunize` | ✅ |
+| **M8** Hardening & rilis | E2E test, CI, docs, packaging | ✅ **v2.0.0** |
 
-Hook keselamatan (`ops-safety-check`, `ops-confirm-gate`, `ops-post-verify`, `ops-env-protect`, `ops-audit-log`) sudah aktif & teruji; tiga hook lanjutan (`ops-context-load` minimal, `ops-shadow-gate`, `ops-sandbox-wrap`) ter-wire sebagai pass-through aman sampai fasenya tiba.
+Kedelapan hook aktif & teruji: keselamatan inti (`ops-safety-check`, `ops-confirm-gate`, `ops-post-verify`, `ops-env-protect`, `ops-audit-log`) + lapisan kecerdasan (`ops-context-load` SessionStart, `ops-shadow-gate` rehearsal-gate, `ops-sandbox-wrap` containment). Tiga CLI pendukung: `scripts/{shadow,trust,immunize}.js`.
 
 ## Struktur repo
 
@@ -76,6 +79,27 @@ CODING_PLAN.md               # rencana implementasi berfase
 ```
 
 State runtime (di luar repo, sisi-kontrol): `~/.logen/{active.json, op-context.json, profiles/, memory/, audit/, shadow/, sandbox/}`.
+
+## Instalasi
+
+LOGEN adalah Claude Code plugin **mandiri** — semua skill/subagent/command/rule/hook ada dalam satu repo, tanpa dependensi eksternal selain Claude Code + Node.js (≥18) + akses shell ke server target.
+
+```bash
+# 1. Clone
+git clone https://github.com/Syamsuddin/ECC-OPS.git logen && cd logen
+
+# 2. (opsional) jalankan test & validator
+npm test && npm run validate
+
+# 3. Pasang sebagai plugin Claude Code — arahkan Claude Code ke direktori ini;
+#    skills/, agents/, commands/, rules/, hooks/hooks.json ditemukan otomatis.
+
+# 4. (untuk lapisan sandbox/containment di server target) pasang helper privileged:
+sudo install -m 0755 tools/logen-sandbox-helper /usr/local/bin/logen-sandbox-helper
+sudo install -m 0440 tools/sudoers.d-logen /etc/sudoers.d/logen && sudo visudo -cf /etc/sudoers.d/logen
+```
+
+State runtime dibuat otomatis di `~/.logen/` saat sesi pertama. Mulai dengan `/profile <host>` untuk memilih host aktif, lalu `/server-setup`, `/deploy`, `/health-check`, dst. Lapisan kecerdasan opt-in: `/shadow`, `/trust`, `/immunize`.
 
 ## Keamanan (non-negotiable)
 
