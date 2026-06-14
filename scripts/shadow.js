@@ -16,6 +16,20 @@ if (sub === 'rehearse') {
   if (!arg) { console.error('usage: shadow rehearse "<command>"'); process.exit(64); }
   const r = rehearse(host, arg);
   const verified = r.passed && (r.shadow_fidelity === 'T1' || r.shadow_fidelity === 'T2');
+  // Feed REHEARSAL evidence to the trust ledger (fidelity-weighted; never enough alone to promote).
+  if (verified && host) {
+    try {
+      const { getEntry, setEntry, applyEvidence, recommendTier } = require('./lib/ledger');
+      const { opClass } = require('./lib/rules');
+      const klass = opClass(arg);
+      if (klass !== 'generic') {
+        let e = getEntry(host, klass);
+        e = applyEvidence(e, { source: 'rehearsal', fidelity: r.shadow_fidelity });
+        e.proposed_tier = recommendTier(e, { destructive: false });
+        setEntry(host, klass, e);
+      }
+    } catch (_) { /* best-effort */ }
+  }
   console.log(`[shadow] ${r.shadow_fidelity} ${r.passed ? 'PASS' : 'FAIL'} — ${r.detail}`);
   console.log(`shadow_verified=${verified} op_hash=${r.op_hash} host=${host || '-'}`);
   process.exit(r.passed ? 0 : 1);
