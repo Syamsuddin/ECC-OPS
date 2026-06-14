@@ -2,11 +2,25 @@
 node_modules/
 npm-debug.log*
 
-# OS
+# OS / editors
 .DS_Store
+.idea/
+.vscode/
 
 # LOGEN runtime state — NEVER commit operator/host state, audit, or secrets
 .logen/
 *.local
 *.bak.*
 coverage/
+
+# AI assistant / vibe-coding config & process docs (not part of the plugin tree).
+# NOTE: .claude-plugin/ (the plugin manifest) is intentionally NOT ignored.
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.mcp.json
+.cursor/
+.cursorrules
+.aider*
+.windsurfrules
+CODING_PLAN.md

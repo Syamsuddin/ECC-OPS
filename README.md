@@ -46,7 +46,7 @@ Plus **lapisan kecerdasan lanjutan** (desain §XXI–XXII): `ops-sandbox` (rehea
 
 ## Status build
 
-LOGEN dibangun berfase (lihat [CODING_PLAN.md](CODING_PLAN.md)). Registry **lengkap**: **28 skills · 9 subagents · 24 commands · 3 rules · 8 hooks**.
+LOGEN dibangun berfase (M0–M8). Registry **lengkap**: **28 skills · 9 subagents · 24 commands · 3 rules · 8 hooks**.
 
 | Fase | Cakupan | Status |
 |---|---|---|
@@ -75,7 +75,6 @@ skills/ agents/ commands/    # artifact (dibangun M2–M7)
 tools/                       # validate.sh, logen-sandbox-helper, sudoers.d-logen
 test/*.test.js               # unit + integration test hook
 ECC_OPS.md                   # spesifikasi desain lengkap (§I–§XXII) — sumber kebenaran
-CODING_PLAN.md               # rencana implementasi berfase
 ```
 
 State runtime (di luar repo, sisi-kontrol): `~/.logen/{active.json, op-context.json, profiles/, memory/, audit/, shadow/, sandbox/}`.
