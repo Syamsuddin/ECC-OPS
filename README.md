@@ -6,8 +6,8 @@
 
 *Plugin Claude Code yang mengoperasikan server Linux dari nol hingga produksi — **aman**, **sadar-konteks**, dan **auditable**.*
 
-![Status](https://img.shields.io/badge/status-alpha%20(M1)-orange?style=flat-square)
-![Version](https://img.shields.io/badge/version-0.1.0-blue?style=flat-square)
+![Status](https://img.shields.io/badge/status-v1.0%20(M3%20complete)-success?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Linux-informational?style=flat-square&logo=linux&logoColor=white)
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2?style=flat-square&logo=anthropic&logoColor=white)
 ![Node](https://img.shields.io/badge/hooks-Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
@@ -52,8 +52,8 @@ LOGEN dibangun berfase (lihat [CODING_PLAN.md](CODING_PLAN.md)). Registry target
 |---|---|---|
 | **M0** Scaffold | manifest, hooks.json, lib, validator | ✅ |
 | **M1** Fondasi keselamatan | 3 rules + 5 hook inti + wiring `~/.logen/` | ✅ |
-| **M2** State & konteks | `ops-discovery`, `ops-memory`, SessionStart | ⏳ |
-| **M3** Operasi dasar (8 domain) | skills + subagents + commands | ⏳ → rilis v1.0 |
+| **M2** State & konteks | `ops-discovery`, `ops-memory`, SessionStart | ✅ |
+| **M3** Operasi dasar (8 domain) | 22 skills + 8 subagents + 18 commands | ✅ **v1.0.0** |
 | **M4–M7** Lapisan kecerdasan | sandbox · shadow · trust · immunity | ⏳ → rilis v2.0 |
 | **M8** Hardening & rilis | E2E, docs, packaging | ⏳ |
 

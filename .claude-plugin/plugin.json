@@ -1,7 +1,7 @@
 {
   "name": "logen",
   "displayName": "LOGEN — Linux Operational Agent",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Autonomous AI sysadmin agent for Linux servers: provisioning, web/DNS/SSL, deploy, monitoring, security hardening, backup, and incident response. Safe-by-default — read-first, rollback-ready, auditable.",
   "author": "Syamsuddin",
   "license": "MIT",
