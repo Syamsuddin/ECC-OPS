@@ -363,8 +363,9 @@ State runtime dibuat otomatis di `~/.logen/` saat sesi pertama. Mulai dengan `/p
 ## Pengembangan
 
 ```bash
-npm test                 # 40 test (unit + integrasi + E2E) via node --test
+npm test                 # 42 test (unit + integrasi + E2E) via node --test
 npm run validate         # validator struktural strict (counts 28/9/24/3/8, JSON, syntax, wiring)
+npm run dry-run          # dry-run perilaku penuh di ~/.logen sementara (hooks, CLI, pipeline, state) — nol sentuhan server
 ```
 
 CI (GitHub Actions) menjalankan keduanya di tiap push/PR. Arsitektur & rasional lengkap ada di [ECC_OPS.md](ECC_OPS.md) (§I–§XXII).

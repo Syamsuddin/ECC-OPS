@@ -5,7 +5,8 @@
   "description": "LOGEN — Linux Operational Agent. Hook & tooling test harness for the Claude Code plugin.",
   "scripts": {
     "test": "node --test test/*.test.js",
-    "validate": "bash tools/validate.sh --strict"
+    "validate": "bash tools/validate.sh --strict",
+    "dry-run": "bash tools/dry-run.sh"
   },
   "license": "MIT",
   "engines": {
