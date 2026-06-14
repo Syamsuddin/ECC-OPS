@@ -368,6 +368,8 @@ npm run validate         # validator struktural strict (counts 28/9/24/3/8, JSON
 npm run dry-run          # dry-run perilaku penuh di ~/.logen sementara (hooks, CLI, pipeline, state) — nol sentuhan server
 ```
 
+Validasi host-side (validator native, containment systemd-run, pipeline service nyata) di VM throwaway: lihat **[docs/VM-TESTING.md](docs/VM-TESTING.md)** (`tools/vm-bootstrap.sh` + `tools/vm-test.sh`).
+
 CI (GitHub Actions) menjalankan keduanya di tiap push/PR. Arsitektur & rasional lengkap ada di [ECC_OPS.md](ECC_OPS.md) (§I–§XXII).
 
 > ⚠️ **Jangan iterasi coding di server produksi.** Gunakan host uji sekali-pakai (VM/container). Tak ada milestone menyentuh server sebelum fondasi keselamatan (M1) lulus.
